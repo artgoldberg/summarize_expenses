@@ -6,66 +6,84 @@ sum tax category data:
     sum amounts across tax categories
 '''
     
-DATA_DIRECTORY = '/Users/arthur_at_sinai/Dropbox/Arthur/PersonalOnDropbox/Financial/Taxes2016/Categorized expenses'
-
-FILES = [
-    'AmEx Transactions 01_27 to 12_31 2016.xlsx',
-    '''
-    'Amazon_2016.xlsx',
-    'Capital One 2016 transactions MG.xlsx',
-    'Chase3909_for_2016 MG.xlsx',
-    'IAG - USAlliance - 2016 Transactions MG.xlsx',
-    'MasterCard_2016 MG.xlsx',
-    'NYU_FCU.xlsx',
-    'Vanguard LLC Transactions.xlsx',
-    '''
-    ]
-
 import sys, os.path
-import math
+import math, argparse
 from collections import defaultdict
-from wc_utils.schema import core, utils
-from wc_utils.schema.io import Reader
+from obj_model import core
+from obj_model.io import Reader
 
-class transactions_2016(core.Model):
+
+class transactions(core.Model):
     amount = core.FloatAttribute()
     tax_category = core.StringAttribute()
+    spending_category = core.StringAttribute()
 
     class Meta(core.Model.Meta):
-        verbose_name_plural = 'Transactions 2016'
+        verbose_name_plural = 'Transactions'
 
-def main():
+def main(transactions):
+    parser = argparse.ArgumentParser(description="Summarize expenses for taxes and spending planning")
+    parser.add_argument('--data_dir', '-d', type=str, help="Directory containing transaction spreadsheets")
+    parser.add_argument('files', nargs='*', help="Transaction spreadsheets")
+    args = parser.parse_args()
+    files = args.files
+    if args.data_dir:
+        for file in os.listdir(args.data_dir):
+            if file.endswith('.xlsx') and not file.startswith('~'): # only read spreadsheets
+                pathname = os.path.join(args.data_dir, file)
+                if os.path.isfile(pathname):
+                    files.append(pathname)
+    if not files:
+        raise ValueError('No files provided')
     all_data = {}
-    for file in FILES:
+    for file in files:
         try:
-            data = Reader().run(os.path.join(DATA_DIRECTORY, file),[transactions_2016],
-                ignore_other_sheets=True, skip_missing_attributes=True)
+            data = Reader().run(file, [transactions],
+                ignore_other_sheets=True, ignore_extra_attributes=True)
             source = file.split('.')[0]
-            all_data[source] = data[transactions_2016]
-            #print("Read {} records from '{}'".format(len(data[transactions_2016]), source))
+            all_data[source] = data[transactions]
+            print("Read {} records from '{}'".format(len(data[transactions]), source),
+                file=sys.stderr)
         except Exception as e:
             print("Error: {}".format(e), file=sys.stderr)
-    
-    total_expenses = defaultdict(float)
+
+    errors = []
     for source,transactions in all_data.items():
         for num,transaction in enumerate(transactions, start=1):
             if math.isnan(transaction.amount):
-                print("Error: amount is NaN: '{}':{}, {}".format(source, num, transaction.tax_category),
-                    file=sys.stderr)
-        
+                errors.append("Error: amount is NaN: '{}':{}: '{}' '{}'".format(source,
+                    num, transaction.amount, transaction.tax_category))
+    if errors:
+        print('source transaction_num transaction.amount transaction.tax_category', file=sys.stderr)
+        for error in errors:
+            print(error, file=sys.stderr)
+        print('Errors found: exiting.', file=sys.stderr)
+        return
+
+    tax_expenses = defaultdict(float)
+    spending_expenses = defaultdict(float)
     for source,transactions in all_data.items():
         try:
-            print("'{}': {} in {} transactions".format(source,
-                int(sum([t.amount for t in transactions])), len(transactions)))
+            print("'{}': ${:,.2f} in {} transactions".format(source,
+                sum([t.amount for t in transactions]), len(transactions)))
         except Exception as e:
             print("Error: '{}' {}".format(source, e), file=sys.stderr)
-        # print("Num\tSource\tCategory\tAmount")
+            print('Error found: exiting.', file=sys.stderr)
         for num,transaction in enumerate(transactions, start=1):
-            category = transaction.tax_category.strip().upper()
-            # print("{},{},{},{}".format(num, source, category, transaction.amount))
-            total_expenses[category] += transaction.amount
-    print("{}\t{}\tUsed".format('Tax category', 'Total'))
-    for tax_category in sorted(total_expenses.keys()):
-        print("{}\t{}".format(tax_category, int(total_expenses[tax_category])))
+            tax_expenses[cleanup_category(transaction.tax_category)] += transaction.amount
+            spending_expenses[cleanup_category(transaction.spending_category)] += transaction.amount
+    # Tax categories:
+    print("\n{}\t{}".format('Tax category', 'Total'))
+    for tax_category in sorted(tax_expenses.keys()):
+        print("{}\t${:,.0f}".format(tax_category, tax_expenses[tax_category]))
+    # Spending categories:
+    print("\n{}\t{}".format('Spending category', 'Total'))
+    for spending_category in sorted(spending_expenses.keys()):
+        print("{}\t${:,.0f}".format(spending_category, spending_expenses[spending_category]))
 
-main()
+def cleanup_category(category):
+    if category=='':
+        return 'Not categorized'
+    return category.strip().upper()
+
+main(transactions)
