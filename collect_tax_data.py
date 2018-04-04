@@ -1,5 +1,7 @@
 ''' Summarize data from multiple transaction spreadsheets
     Assumes all expenses are positive
+
+Last ran with wc_utils commit 09feeee455c1429eb60128b95ae3b7b311992461
 '''
 import sys, os.path
 import math, argparse
@@ -10,6 +12,7 @@ from obj_model.io import Reader
 
 class transactions(core.Model):
     # a transaction record
+    date = core.DateAttribute()                     # transaction date
     payee = core.StringAttribute()              # recipient of payment
     amount = core.FloatAttribute()              # payment, as a positive dollar amount
     tax_category = core.StringAttribute()       # tax category of payment
@@ -93,18 +96,18 @@ def main(transactions):
         return
 
     if args.debug:
-        print("source\tpayee\tamount\ttax cat.\tspend cat.")
+        print("source\tdate\tpayee\tamount\ttax category\tspend category")
         for source,transactions in all_data.items():
             for transaction in transactions:
                 if args.taxes:
                     if keep_cat(transaction.tax_category, filters, selectors):
-                            print("{}\t{}\t{}\t{}".format(source, transaction.payee, transaction.amount,
-                            transaction.tax_category))
+                            print("{}\t{}\t{}\t{}\t{}".format(source, transaction.date, transaction.payee,
+                                transaction.amount, transaction.tax_category))
                 else:
                     if keep_cat(transaction.tax_category, filters, selectors) or \
                        keep_cat(transaction.spending_category, filters, selectors):
-                            print("{}\t{}\t{}\t{}\t{}".format(source, transaction.payee, transaction.amount,
-                            transaction.tax_category, transaction.spending_category))
+                            print("{}\t{}\t{}\t{}\t{}\t{}".format(source, transaction.date, transaction.payee,
+                            transaction.amount, transaction.tax_category, transaction.spending_category))
 
     tax_expenses = defaultdict(float)
     spending_expenses = defaultdict(float)
