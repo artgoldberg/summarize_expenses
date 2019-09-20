@@ -9,10 +9,9 @@ from collections import defaultdict
 from obj_model import core
 from obj_model.io import Reader
 
-
 class transactions(core.Model):
     # a transaction record
-    date = core.DateAttribute()                     # transaction date
+    date = core.DateAttribute()                 # transaction date
     payee = core.StringAttribute()              # recipient of payment
     amount = core.FloatAttribute()              # payment, as a positive dollar amount
     tax_category = core.StringAttribute()       # tax category of payment
@@ -40,7 +39,7 @@ def keep_cat(category, filters, selectors):
         return True
     return True
 
-def main(transactions):
+def make_parser():
     parser = argparse.ArgumentParser(description="Summarize expenses for taxes and spending planning")
     parser.add_argument('--data_dir', '-d', type=str, help="Directory containing transaction spreadsheets")
     parser.add_argument('--debug', action="store_true", help="Debug, i.e., print all transactions")
@@ -50,7 +49,9 @@ def main(transactions):
     parser.add_argument('--filter', '-f', type=argparse.FileType('r'),
         help="File with category patterns to filter")
     parser.add_argument('files', nargs='*', help="Transaction spreadsheets")
-    args = parser.parse_args()
+    return parser
+
+def main(transactions, args):
     files = args.files
     if args.data_dir:
         print('Data dir:', args.data_dir)
@@ -74,7 +75,7 @@ def main(transactions):
     for file in files:
         try:
             data = Reader().run(file, [transactions],
-                ignore_other_sheets=True, ignore_extra_attributes=True)
+                ignore_extra_sheets=True, ignore_extra_attributes=True)
             source = os.path.basename(file)
             all_data[source] = data[transactions]
             # print("Read {} records from '{}'".format(len(data[transactions]), source), file=sys.stderr)
@@ -147,4 +148,10 @@ def cleanup_category(category):
         return 'Not categorized'
     return category.strip().upper()
 
-main(transactions)
+if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
+    try:
+        args = make_parser().parse_args()
+        print(args)
+        main(transactions, args)
+    except KeyboardInterrupt:
+        pass
