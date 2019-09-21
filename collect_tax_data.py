@@ -8,6 +8,7 @@ import math, argparse
 from collections import defaultdict
 from obj_model import core
 from obj_model.io import Reader
+from pprint import pprint
 
 class transactions(core.Model):
     # a transaction record
@@ -19,6 +20,8 @@ class transactions(core.Model):
 
     class Meta(core.Model.Meta):
         verbose_name_plural = 'Transactions'
+
+transactions_model = transactions
 
 def clean(l):
     # clean a list of category pattern matches
@@ -51,7 +54,7 @@ def make_parser():
     parser.add_argument('files', nargs='*', help="Transaction spreadsheets")
     return parser
 
-def main(transactions, args):
+def main(args):
     files = args.files
     if args.data_dir:
         print('Data dir:', args.data_dir)
@@ -63,6 +66,18 @@ def main(transactions, args):
     if not files:
         raise ValueError('No files provided')
 
+    # read data files
+    all_data = {}
+    for file in files:
+        try:
+            data = Reader().run(file, [transactions_model], ignore_extra_sheets=True,
+                ignore_extra_attributes=True, ignore_sheet_order=True, ignore_attribute_order=True)
+            source = os.path.basename(file)
+            all_data[source] = data
+            print("Read {} records from '{}'".format(len(data), source), file=sys.stderr)
+        except ValueError as e:
+            print("Error in {}: {}".format(os.path.basename(file), e), file=sys.stderr)
+
     # read selectors and/or filters
     selectors = []
     if args.select:
@@ -70,17 +85,6 @@ def main(transactions, args):
     filters = []
     if args.filter:
         filters = clean(args.filter.readlines())
-
-    all_data = {}
-    for file in files:
-        try:
-            data = Reader().run(file, [transactions],
-                ignore_extra_sheets=True, ignore_extra_attributes=True)
-            source = os.path.basename(file)
-            all_data[source] = data[transactions]
-            # print("Read {} records from '{}'".format(len(data[transactions]), source), file=sys.stderr)
-        except Exception as e:
-            print("Error in {}: {}".format(os.path.basename(file), e), file=sys.stderr)
 
     # error check
     errors = []
@@ -116,6 +120,7 @@ def main(transactions, args):
     for source,transactions in all_data.items():
         try:
             # all expenses must be positive
+            # todo: warn if expense < 0
             sum_expenses = sum([t.amount for t in transactions if t.amount>0])
             print("'{}': ${:,.2f} in {} expense transactions".format(source, sum_expenses, len(transactions)))
         except Exception as e:
@@ -128,7 +133,7 @@ def main(transactions, args):
                     tax_expenses[cleanup_category(transaction.tax_category)] += transaction.amount
                 if keep_cat(transaction.spending_category, filters, selectors):
                     spending_expenses[cleanup_category(transaction.spending_category)] += transaction.amount
-    print("{} transactions in {} sources".format(num_expenses, len(all_data.keys())))
+    print("{} transactions in {} source(s)".format(num_expenses, len(all_data.keys())))
 
     # Tax categories:
     print("\n{}\t{}".format('Tax category', 'Total'))
@@ -143,6 +148,8 @@ def main(transactions, args):
             print("{}\t${:,.2f}".format(spending_category, spending_expenses[spending_category]))
         print("TOTAL\t${:,.2f}".format(sum(spending_expenses.values())))
 
+    return (tax_expenses, spending_expenses)
+
 def cleanup_category(category):
     if category=='':
         return 'Not categorized'
@@ -151,7 +158,6 @@ def cleanup_category(category):
 if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
     try:
         args = make_parser().parse_args()
-        print(args)
-        main(transactions, args)
+        main(args)
     except KeyboardInterrupt:
         pass
