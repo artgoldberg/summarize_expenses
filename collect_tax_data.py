@@ -117,23 +117,27 @@ def main(args):
     tax_expenses = defaultdict(float)
     spending_expenses = defaultdict(float)
     num_expenses = 0
+    num_credits = 0
     for source,transactions in all_data.items():
         try:
-            # all expenses must be positive
-            # todo: warn if expense < 0
-            sum_expenses = sum([t.amount for t in transactions if t.amount>0])
-            print("'{}': ${:,.2f} in {} expense transactions".format(source, sum_expenses, len(transactions)))
+            # Amount may be greater or less than 0
+            # positive: expense
+            # negative: credit
+            sum_expenses = sum([t.amount for t in transactions])
+            print("'{}': ${:,.2f} in {} expense and credit transactions".format(source, sum_expenses, len(transactions)))
         except Exception as e:
             print("Error: '{}' {}".format(source, e), file=sys.stderr)
             print('Error found: exiting.', file=sys.stderr)
         for num,transaction in enumerate(transactions, start=1):
             if 0<transaction.amount:
                 num_expenses += 1
-                if keep_cat(transaction.tax_category, filters, selectors):
-                    tax_expenses[cleanup_category(transaction.tax_category)] += transaction.amount
-                if keep_cat(transaction.spending_category, filters, selectors):
-                    spending_expenses[cleanup_category(transaction.spending_category)] += transaction.amount
-    print("{} transactions in {} source(s)".format(num_expenses, len(all_data.keys())))
+            else:
+                num_credits += 1
+            if keep_cat(transaction.tax_category, filters, selectors):
+                tax_expenses[cleanup_category(transaction.tax_category)] += transaction.amount
+            if keep_cat(transaction.spending_category, filters, selectors):
+                spending_expenses[cleanup_category(transaction.spending_category)] += transaction.amount
+    print("transactions: {} expense(s) & {} credit(s) in {} source(s)".format(num_expenses, num_credits, len(all_data.keys())))
 
     # Tax categories:
     print("\n{}\t{}".format('Tax category', 'Total'))

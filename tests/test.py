@@ -27,6 +27,7 @@ class Test(unittest.TestCase):
         expected_tax_expenses = \
             {'MEIRA C: REPAIRS AND MAINTENANCE': 160.0,
                 'NO TAX CONSEQUENCES': 40.0,
+                'OTHER': 1.0,
                 'NONE: POLITICAL': 80.0}
         self.assertEqual(expected_tax_expenses, tax_expenses)
         args = Namespace(data_dir=self.FIXTURES, debug=False, files=[], filter=None,
