@@ -1,15 +1,15 @@
 ''' Summarize data from multiple transaction spreadsheets
-    Assumes all expenses are positive
-
-Last ran with wc_utils commit 09feeee455c1429eb60128b95ae3b7b311992461
+    Expenses are positive and credits are negative
 '''
 import sys, os.path
 import math, argparse
-from collections import defaultdict
-from obj_model import core
-from obj_model.io import Reader
 from pprint import pprint
+from collections import defaultdict
 
+from obj_tables.io import Reader
+import schema
+
+'''
 class transactions(core.Model):
     # a transaction record
     date = core.DateAttribute()                 # transaction date
@@ -22,6 +22,11 @@ class transactions(core.Model):
         verbose_name_plural = 'Transactions'
 
 transactions_model = transactions
+
+filename = os.path.join(os.path.dirname(__file__), 'fixtures', 'test_simple.xlsx')
+data = obj_tables.io.Reader().run(filename, models=[Transaction], group_objects_by_model=True)
+pprint(data)
+'''
 
 def clean(l):
     # clean a list of category pattern matches
@@ -70,7 +75,8 @@ def main(args):
     all_data = {}
     for file in files:
         try:
-            data = Reader().run(file, [transactions_model], ignore_extra_sheets=True,
+            data = Reader().run(file, models=[schema.Transaction], 
+                ignore_extra_models=True, 
                 ignore_extra_attributes=True, ignore_sheet_order=True, ignore_attribute_order=True)
             source = os.path.basename(file)
             all_data[source] = data
