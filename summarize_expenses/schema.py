@@ -9,7 +9,7 @@ class Transaction(obj_tables.Model):
     date = obj_tables.DateAttribute(verbose_name='Date')
     amount = obj_tables.FloatAttribute(verbose_name='Amount')
     tax_category = obj_tables.StringAttribute(verbose_name='Tax category')
-    payee = obj_tables.StringAttribute(verbose_name='Payee')
+    payee = obj_tables.LongStringAttribute(verbose_name='Payee')
     spending_category = obj_tables.StringAttribute(verbose_name='Spending category')
 
     class Meta(obj_tables.Model.Meta):
