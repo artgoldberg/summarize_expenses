@@ -7,7 +7,7 @@ from pprint import pprint
 from collections import defaultdict
 
 from obj_tables.io import Reader
-import schema
+import summarize_expenses
 
 '''
 class transactions(core.Model):
@@ -75,14 +75,17 @@ def main(args):
     all_data = {}
     for file in files:
         try:
-            data = Reader().run(file, models=[schema.Transaction], 
+            data = Reader().run(file, models=[summarize_expenses.schema.Transaction],
                 ignore_extra_models=True, 
                 ignore_extra_attributes=True, ignore_sheet_order=True, ignore_attribute_order=True)
+            data = data[summarize_expenses.schema.Transaction]
             source = os.path.basename(file)
             all_data[source] = data
             print("Read {} records from '{}'".format(len(data), source), file=sys.stderr)
         except ValueError as e:
             print("Error in {}: {}".format(os.path.basename(file), e), file=sys.stderr)
+        except Exception as e:
+            print("Exception in {}: {}".format(os.path.basename(file), e), file=sys.stderr)
 
     # read selectors and/or filters
     selectors = []
