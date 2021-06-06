@@ -1,0 +1,17 @@
+pytest --disable-warnings -s tests/test.py
+
+pytest -s --disable-warnings  --cov=summarize_expenses  --cov-branch tests/test.py; coverage html
+
+export FINAL_TRANS_DATA="/Users/arthur_at_sinai/Dropbox/Arthur/PersonalOnDropbox/Financial/taxes/2019 taxes/Expense transaction data/Final transaction data"
+echo $FINAL_TRANS_DATA
+
+ln "$FINAL_TRANS_DATA/AmEx_2019.xlsx"
+ln "$FINAL_TRANS_DATA/Amazon_2019.xlsx"
+ln "$FINAL_TRANS_DATA/Capital_One_Visa_2019.xlsx"
+ln "$FINAL_TRANS_DATA/Chase_checking_joint_2019.xlsx"
+ln "$FINAL_TRANS_DATA/Citi_Mastercard_2019.xlsx"
+ln "$FINAL_TRANS_DATA/NYU_FCU_2019.xlsx"
+ln "$FINAL_TRANS_DATA/Paypal_2019.xlsx"
+ln "$FINAL_TRANS_DATA/USAlliance_2019.xlsx"
+ln "$FINAL_TRANS_DATA/Verizon_2019.xlsx"
+
