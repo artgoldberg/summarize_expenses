@@ -1,0 +1,12 @@
+export FINAL_TRANS_DATA="/Users/arthur_at_sinai/Dropbox/Arthur/PersonalOnDropbox/Financial/taxes/2020 taxes/Expense transaction data/Final transaction data"
+echo "Final transaction data: $FINAL_TRANS_DATA"
+
+ln "$FINAL_TRANS_DATA/AmEx_2020.xlsx"
+ln "$FINAL_TRANS_DATA/Amazon_2020.xlsx"
+ln "$FINAL_TRANS_DATA/Capital_One_Visa_2020.xlsx"
+ln "$FINAL_TRANS_DATA/Chase_checking_2020.xlsx"
+ln "$FINAL_TRANS_DATA/Citi_Mastercard_2020.xlsx"
+ln "$FINAL_TRANS_DATA/Meira_EasyPayXpress_Metrocard_2020.xlsx"
+ln "$FINAL_TRANS_DATA/Paypal_2020.xlsx"
+ln "$FINAL_TRANS_DATA/USAlliance_2020.xlsx"
+ln "$FINAL_TRANS_DATA/Verizon_2020.xlsx"

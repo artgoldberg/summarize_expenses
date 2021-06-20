@@ -1,0 +1,10 @@
+docker pull karrlab/wc_env_dependencies
+
+docker run -v /Users/arthur_at_sinai/gitOnMyLaptopLocal/wc_dev_repos/summarize_expenses:/root/summarize_expenses --interactive --tty karrlab/wc_env_dependencies  bash
+
+in container:
+cd summarize_expenses/docker_setup
+source .arthur_bashrc
+export PYTHONPATH=".:/usr/local/lib/python3.7/site-packages"
+pip3 install obj_tables
+python3 -c "import obj_tables"

@@ -1,0 +1,17 @@
+alias ls="ls -G"
+alias h=history
+alias m=more
+alias t='tail -n 22'
+alias g=grep
+alias j=jobs
+alias f=find
+alias p=pushd
+alias he='head -3'
+alias d='dirs -v'
+alias ll="ls -lt"
+
+PS1="\[\033[42m\]\[\033[31m\]\u@\h:\w\\[\033[00m\] \$ "
+
+export PYTHONPATH=".:/usr/local/lib/python3.7/site-packages"
+pip3 install obj_tables
+python3 -c "import obj_tables"
