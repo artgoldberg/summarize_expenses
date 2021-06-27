@@ -8,3 +8,8 @@ source .arthur_bashrc
 export PYTHONPATH=".:/usr/local/lib/python3.7/site-packages"
 pip3 install obj_tables
 python3 -c "import obj_tables"
+cd ..
+
+analyze data:
+python3 summarize_expenses/collect_tax_data.py --data_dir 2020_data/ > 2020_data/summarized_expenses.tsv
+
