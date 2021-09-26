@@ -1,6 +1,6 @@
 docker pull karrlab/wc_env_dependencies
 
-docker run -v /Users/arthur_at_sinai/gitOnMyLaptopLocal/wc_dev_repos/summarize_expenses:/root/summarize_expenses --interactive --tty karrlab/wc_env_dependencies  bash
+docker run -v /Users/arthur_at_sinai/gitOnMyLaptopLocal/other_repos/summarize_expenses:/root/summarize_expenses --interactive --tty karrlab/wc_env_dependencies  bash
 
 in container:
 cd summarize_expenses/docker_setup
